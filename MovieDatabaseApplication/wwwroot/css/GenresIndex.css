@@ -1,0 +1,20 @@
+﻿.deleteButton {
+    background-color: crimson;
+    border: none;
+    color: ghostwhite;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.spinner-border {
+    display: none;
+}
+
+
+#genreCreateForm label.error {
+    padding-left: 5px;
+    padding-bottom: 1px;
+    font-weight: 600;
+    color: crimson;
+    margin-bottom: 5px;
+}

@@ -1,0 +1,88 @@
+﻿@model IEnumerable<MovieDatabaseApplication.Models.Genres>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+
+<link rel="stylesheet" href="~/css/GenresIndex.css">
+
+<h2>Genre Information</h2>
+<div>
+    <p>
+        <button type="button" class="btn btn-primary" onclick="genres.onOpenCreate()" data-toggle="modal" data-target="#addGenreModal">Add New Genre</button>
+    </p>
+    <!--Modal-->
+    <div class="modal fade" id="addGenreModal" tabindex="-1" role="dialog" aria-labelledby="addGenreModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addGenreModalLabel">Add Genre</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="genreCreateForm">
+                        <div class="form-group">
+                            <label for="genre" class="col-form-label">Genre:</label>
+                            <input type="text" class="form-control" id="genreInput" name="genreInput">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="genres.onCloseCreate()" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="genres.onAddGenre()">Save Genre</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End of Modal-->
+</div>
+<div id="alerts"></div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">
+                Genre
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="genreTable">
+    </tbody>
+</table>
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only"></span>
+    </div>
+</div>
+<!--Modal-->
+<div class="modal fade" id="deleteGenreModal" tabindex="-1" aria-labelledby="deleteGenreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modalContent">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteGenreModalLabel">Delete?</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you would like to delete this genre?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" onclick="genres.onCloseModal()">Cancel</button>
+                <button type="button" class="btn btn-outline-primary" onclick="genres.onDeleteGenre()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End of Modal-->
+
+
+
+
+<script type="text/javascript" src="~/js/GenresIndex.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }
+     
