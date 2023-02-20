@@ -12,150 +12,145 @@ namespace MovieDatabaseApplication.Controllers
 {
     public class RatingsController : Controller
     {
-        private readonly MovieContext _context;
+        private UnitOfWork _unitOfWork;
+        
 
-        public RatingsController(MovieContext context)
+        public RatingsController(UnitOfWork unitOfWork)
         {
-            _context = context;
+            
+            _unitOfWork = unitOfWork;
         }
 
-        // GET: Ratings
-        public async Task<IActionResult> Index()
-        {
-              return View(await _context.Ratings.ToListAsync());
-        }
-
-        // GET: Ratings/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.Ratings == null)
-            {
-                return NotFound();
-            }
-
-            var ratings = await _context.Ratings
-                .FirstOrDefaultAsync(m => m.RatingId == id);
-            if (ratings == null)
-            {
-                return NotFound();
-            }
-
-            return View(ratings);
-        }
-
-        // GET: Ratings/Create
-        public IActionResult Create()
+        public IActionResult Index()
         {
             return View();
         }
 
-        // POST: Ratings/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RatingId,Rating")] Ratings ratings)
+        /// <summary>
+        /// Get a list of rating items
+        /// </summary>
+        /// <returns></returns>
+        // POST: Ratings/GetRatings
+        [HttpGet]
+        public IEnumerable<Ratings> GetRatings()
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(ratings);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(ratings);
+           
+            var ratings = _unitOfWork.RatingRepository.Get();
+            return ratings;
+
         }
 
-        // GET: Ratings/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        /// <summary>
+        /// Get a rating by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        ///  /// <response code="200">Returns the list of items</response>
+        // POST: Ratings/GetRating
+        [HttpGet("{id}")]
+        public ActionResult GetRating(int id)
         {
-            if (id == null || _context.Ratings == null)
+            Ratings rating = _unitOfWork.RatingRepository.GetByID(id);
+
+            if (rating == null)
             {
-                return NotFound();
+                return NotFound("That object is not found.");
             }
 
-            var ratings = await _context.Ratings.FindAsync(id);
+            return Accepted(rating);
+
+        }
+
+        /// <summary>
+        /// Create a new rating item
+        /// </summary>
+        /// <param name="postRating"></param>
+        /// <returns></returns>
+        //POST: Ratings/PostRatings
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public ActionResult PostRatings(RatingDto postRating)
+        {
+            var tempRating = new Ratings()
+            {
+                RatingId = postRating.RatingId,
+                Rating = postRating.Rating
+            };
+            _unitOfWork.RatingRepository.Insert(tempRating);
+            _unitOfWork.Save();
+            return Accepted(tempRating);
+        }
+
+        /// <summary>
+        /// Update a rating item
+        /// </summary>
+        /// <param name="ratingId"></param>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        //POST: Ratings/EditRatings
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult EditRatings(int ratingId, RatingDto rating)
+        {
+            Ratings ratings = _unitOfWork.RatingRepository.GetByID(ratingId);
             if (ratings == null)
             {
-                return NotFound();
+                return Problem(statusCode: 400, detail: "Could not find object", title: "400 Error");
+              
             }
-            return View(ratings);
+
+            ratings.Rating = rating.Rating;
+
+            _unitOfWork.RatingRepository.Update(ratings);
+            _unitOfWork.Save();
+            return Accepted();
+
         }
 
-        // POST: Ratings/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RatingId,Rating")] Ratings ratings)
+        /// <summary>
+        /// Delete a rating item by id
+        /// </summary>
+        /// <param name="ratingId"></param>
+        /// <returns></returns>
+        //GET: Ratings/DeleteRatings
+        [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult DeleteRatings(int ratingId)
         {
-            if (id != ratings.RatingId)
-            {
-                return NotFound();
-            }
+            //var ratings = _db.Ratings.Find(ratingId);
+            //Ratings ratings = ratingsRepository.GetRatingByID(ratingId);
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(ratings);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RatingsExists(ratings.RatingId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(ratings);
-        }
+            Ratings ratings = _unitOfWork.RatingRepository.GetByID(ratingId);
 
-        // GET: Ratings/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Ratings == null)
+            var movie = _unitOfWork.MovieRepository.Get(m => m.RatingId == ratingId);
+            //var movie = _db.Movies.FirstOrDefault(x => x.RatingId == ratingId);
+            if (movie.ToList().Count > 0)
             {
-                return NotFound();
+                return Problem(statusCode: 400, detail: "Cannot delete rating; other table has dependency on it", title: "400 Error");
+                //return BadRequest("Cannot delete rating; other table has dependency on it");
             }
-
-            var ratings = await _context.Ratings
-                .FirstOrDefaultAsync(m => m.RatingId == id);
             if (ratings == null)
             {
-                return NotFound();
+                return Problem(statusCode: 400, detail: "Could not find object", title: "400 Error");
+                //return BadRequest("Could not find object");
             }
 
-            return View(ratings);
+            // _db.Ratings.Remove(ratings);
+            //_db.SaveChanges();
+            //ratingsRepository.DeleteRatings(ratingId);
+            //ratingsRepository.Save();
+            _unitOfWork.RatingRepository.Delete(ratingId);
+            _unitOfWork.Save();
+            return Accepted();
         }
 
-        // POST: Ratings/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        protected override void Dispose(bool disposing)
         {
-            if (_context.Ratings == null)
-            {
-                return Problem("Entity set 'MovieContext.Ratings'  is null.");
-            }
-            var ratings = await _context.Ratings.FindAsync(id);
-            if (ratings != null)
-            {
-                _context.Ratings.Remove(ratings);
-            }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            _unitOfWork.Dispose();
+            base.Dispose(disposing);
         }
 
-        private bool RatingsExists(int id)
-        {
-          return _context.Ratings.Any(e => e.RatingId == id);
-        }
     }
 }

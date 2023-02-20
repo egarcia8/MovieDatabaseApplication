@@ -1,35 +1,85 @@
-﻿@model IEnumerable<MovieDatabaseApplication.Models.Ratings>
-
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
 @{
-    ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<link rel="stylesheet" href="~/css/RatingsIndex.css">
+
+
+<h2>Rating Information</h2>
+<div>
+    <p>
+        <button type="button" class="btn btn-primary" onclick="ratings.onOpenCreate()" data-toggle="modal" data-target="#addRatingModal">Add New Rating</button>
+    </p>
+    <!--Modal-->
+    <div class="modal fade" id="addRatingModal" tabindex="-1" role="dialog" aria-labelledby="addRatingModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRatingModalLabel">Add Rating</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="ratingCreateForm">
+                        <div class="form-group">
+                            <label for="rating" class="col-form-label">Rating:</label>
+                            <input type="text" class="form-control" id="ratingInput" name="ratingInput">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="ratings.onCloseCreate()" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="ratings.onAddRating()">Save Rating</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End of Modal-->
+</div>
+<div id="alerts"></div>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Rating)
+            <th scope="col">
+                Rating
             </th>
             <th></th>
         </tr>
     </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rating)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.RatingId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.RatingId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.RatingId">Delete</a>
-            </td>
-        </tr>
-}
+    <tbody id="ratingTable">
     </tbody>
 </table>
+<div class="d-flex justify-content-center">
+    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only"></span>
+    </div>
+</div>
+<!--Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modalContent">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteModalLabel">Delete?</h2>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you would like to delete this rating?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" onclick="ratings.onCloseModal()">Cancel</button>
+                <button type="button" class="btn btn-outline-primary" onclick="ratings.onDeleteRating()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End of Modal-->
+
+<script src="~/js/RatingsIndex.js"></script> 
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }
+
+    

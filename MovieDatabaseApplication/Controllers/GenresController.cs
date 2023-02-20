@@ -61,13 +61,9 @@ namespace MovieDatabaseApplication.Controllers
 
         //}
 
-        // GET: Genres/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+       
 
-        // POST: Genres/Create
+        // POST: Genres/PostGenres
         /// <summary>
         /// Create a new genre item
         /// </summary>
@@ -84,25 +80,16 @@ namespace MovieDatabaseApplication.Controllers
             };
             _unitOfWork.GenreRepository.Insert(tempGenre);
             _unitOfWork.Save();
-
-            //_db.Genres.Add(tempGenre);
-            //_db.SaveChanges();
             return Accepted(tempGenre);
         }
 
-        
-
-        // GET: Genres/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            return View();
-        }
 
         /// <summary>
         /// Delete a genre item by id
         /// </summary>
         /// <param name="genreId"></param>
         /// <returns></returns>
+        //GET: Genres/DeleteGenres/5
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
