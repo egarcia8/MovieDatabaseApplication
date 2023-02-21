@@ -30,7 +30,7 @@ namespace MovieDatabaseApplication.Controllers
         /// Get a list of rating items
         /// </summary>
         /// <returns></returns>
-        // POST: Ratings/GetRatings
+        // GET: Ratings/GetRatings
         [HttpGet]
         public IEnumerable<Ratings> GetRatings()
         {
@@ -45,10 +45,9 @@ namespace MovieDatabaseApplication.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        ///  /// <response code="200">Returns the list of items</response>
-        // POST: Ratings/GetRating
-        [HttpGet("{id}")]
-        public ActionResult GetRating(int id)
+        /// <response code="200">Returns the list of items</response>        
+        [HttpGet("api/ratings/{id}")]
+        public ActionResult GetApiRating(int id)
         {
             Ratings rating = _unitOfWork.RatingRepository.GetByID(id);
 
@@ -58,7 +57,6 @@ namespace MovieDatabaseApplication.Controllers
             }
 
             return Accepted(rating);
-
         }
 
         /// <summary>
@@ -113,7 +111,7 @@ namespace MovieDatabaseApplication.Controllers
         /// </summary>
         /// <param name="ratingId"></param>
         /// <returns></returns>
-        //GET: Ratings/DeleteRatings
+        //GET: Ratings/
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -144,6 +142,17 @@ namespace MovieDatabaseApplication.Controllers
             _unitOfWork.RatingRepository.Delete(ratingId);
             _unitOfWork.Save();
             return Accepted();
+        }
+
+        //[HttpGet]
+        //public async Task<IActionResult> Edit(int id)
+        //{
+        //    return View(id);
+        //}
+
+        public IActionResult Edit(int id)
+        {
+            return View(id);
         }
 
         protected override void Dispose(bool disposing)

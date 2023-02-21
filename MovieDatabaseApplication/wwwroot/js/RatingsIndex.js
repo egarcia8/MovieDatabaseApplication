@@ -58,7 +58,7 @@
     function onDeleteRating() {
         $.ajax({
             type: "DELETE",
-            url: ".Ratings/DeleteRatings/" + tempRatingId,
+            url: "/Ratings/DeleteRatings/" + tempRatingId,
             //dataType: "json",
             //crossDomain: "true",
             success: function () {

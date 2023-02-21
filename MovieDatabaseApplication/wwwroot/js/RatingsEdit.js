@@ -20,7 +20,7 @@
     $(".form-group").hide();
     $.ajax({
         type: "GET",
-        url: "/Ratings/EditRatings/" + id,
+        url: "/api/Ratings/" + id,
         dataType: "json",
         crossDomain: "true",
         success: function (result) {
@@ -46,7 +46,7 @@
         if (isValid) {
             $.ajax({
                 type: "PUT",
-                url: "https://localhost:7252/api/Ratings?ratingId=" + id,
+                url: "/Ratings/EditRatings/" + id,
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(ratingObj),
                 dataType: "json",
