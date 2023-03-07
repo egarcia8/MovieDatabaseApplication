@@ -12,157 +12,165 @@ namespace MovieDatabaseApplication.Controllers
 {
     public class MoviesController : Controller
     {
-        private readonly MovieContext _context;
+        private UnitOfWork _unitOfWork;
 
-        public MoviesController(MovieContext context)
+        public MoviesController(UnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
-        // GET: Movies
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var movieContext = _context.Movies.Include(m => m.Ratings);
-            return View(await movieContext.ToListAsync());
+            return View();
         }
 
-        // GET: Movies/Details/5
-        public async Task<IActionResult> Details(int? id)
+        /// <summary>
+        /// Get a list of rating items
+        /// </summary>
+        /// <returns></returns>
+        // GET:Movies/GetMovies
+        [HttpGet]
+        public IEnumerable<Movies> GetMovies()
         {
-            if (id == null || _context.Movies == null)
-            {
-                return NotFound();
-            }
+            var movies = _unitOfWork.MovieRepository.Get(null, null, "Ratings,MovieGenres.Genres");
 
-            var movies = await _context.Movies
-                .Include(m => m.Ratings)
-                .FirstOrDefaultAsync(m => m.MovieId == id);
-            if (movies == null)
-            {
-                return NotFound();
-            }
+            return movies;
+        }
 
-            return View(movies);
+        /// <summary>
+        /// Get a movie by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <response code="200">Returns a single movie</response>
+        [HttpGet("api/movies/{id}")]
+        public ActionResult GetApiMovie(int id)
+        {
+
+            var movie = _unitOfWork.MovieRepository.Get(movie => movie.MovieId == id, null, "Ratings,MovieGenres.Genres");
+
+            return Ok(movie.FirstOrDefault());
         }
 
         // GET: Movies/Create
         public IActionResult Create()
         {
-            ViewData["RatingId"] = new SelectList(_context.Ratings, "RatingId", "RatingId");
             return View();
         }
 
-        // POST: Movies/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Create a new movie item
+        /// </summary>
+        /// <param name="postMovie"></param>
+        /// <returns></returns>
+        //POST: Movies/PostMovie
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MovieId,Title,Description,RatingId")] Movies movies)
+        public ActionResult PostMovie([FromBody] MovieDto postMovie)
         {
-            if (ModelState.IsValid)
+            var movieGenres = new List<MovieGenres>();
+
+            foreach (var mg in postMovie.MovieGenres)
             {
-                _context.Add(movies);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var genre = _unitOfWork.GenreRepository.GetByID(mg.GenreId);
+                movieGenres.Add(new MovieGenres { Genres = genre });
             }
-            ViewData["RatingId"] = new SelectList(_context.Ratings, "RatingId", "RatingId", movies.RatingId);
-            return View(movies);
+
+            var tempMovie = new Movies()
+            {
+                Title = postMovie.Title,
+                Description = postMovie.Description,
+                RatingId = postMovie.RatingId,
+                MovieGenres = movieGenres
+            };
+
+            _unitOfWork.MovieRepository.Insert(tempMovie);
+
+            _unitOfWork.Save();
+
+            return Accepted(tempMovie);
         }
+
 
         // GET: Movies/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null || _context.Movies == null)
-            {
-                return NotFound();
-            }
+            //if (id == null || _context.Movies == null)
+            //{
+            //    return NotFound();
+            //}
 
-            var movies = await _context.Movies.FindAsync(id);
-            if (movies == null)
-            {
-                return NotFound();
-            }
-            ViewData["RatingId"] = new SelectList(_context.Ratings, "RatingId", "RatingId", movies.RatingId);
-            return View(movies);
+            //var movies = await _context.Movies.FindAsync(id);
+            //if (movies == null)
+            //{
+            //    return NotFound();
+            //}
+            //ViewData["RatingId"] = new SelectList(_context.Ratings, "RatingId", "RatingId", movies.RatingId);
+            return View(id);
         }
 
-        // POST: Movies/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("MovieId,Title,Description,RatingId")] Movies movies)
+        /// <summary>
+        /// Update a movie item
+        /// </summary>
+        /// <param name="movieId"></param>
+        /// <param name="movie"></param>
+        /// <returns></returns>
+        //PUT: Movies/EditMovie/id
+        [HttpPut("api/Movies/{movieId}")]
+        public ActionResult EditMovie(int movieId, [FromBody] MovieDto movie)
         {
-            if (id != movies.MovieId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(movies);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!MoviesExists(movies.MovieId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["RatingId"] = new SelectList(_context.Ratings, "RatingId", "RatingId", movies.RatingId);
-            return View(movies);
-        }
-
-        // GET: Movies/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Movies == null)
-            {
-                return NotFound();
-            }
-
-            var movies = await _context.Movies
-                .Include(m => m.Ratings)
-                .FirstOrDefaultAsync(m => m.MovieId == id);
-            if (movies == null)
-            {
-                return NotFound();
-            }
-
-            return View(movies);
-        }
-
-        // POST: Movies/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Movies == null)
-            {
-                return Problem("Entity set 'MovieContext.Movies'  is null.");
-            }
-            var movies = await _context.Movies.FindAsync(id);
-            if (movies != null)
-            {
-                _context.Movies.Remove(movies);
-            }
             
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var movies = _unitOfWork.MovieRepository.Get(m => m.MovieId == movieId, null, "MovieGenres").FirstOrDefault();
+
+
+            if (movies == null)
+            {
+                return Problem(statusCode: 400, detail: "Could not find object", title: "400 Error");
+            }
+
+            movies.MovieGenres = new List<MovieGenres>();
+
+            _unitOfWork.MovieRepository.Update(movies);
+
+            var movieGenres = new List<MovieGenres>();
+            foreach (var mg in movie.MovieGenres)
+            {
+                var genre = _unitOfWork.GenreRepository.GetByID(mg.GenreId);
+                movieGenres.Add(new MovieGenres { Genres = genre });
+            }
+
+            movies.Title = movie.Title;
+            movies.Description = movie.Description;
+            movies.RatingId = movie.RatingId;
+            movies.MovieGenres = movieGenres;
+
+            _unitOfWork.MovieRepository.Update(movies);
+            _unitOfWork.Save();
+
+            return Accepted();
+
         }
 
-        private bool MoviesExists(int id)
+
+        /// <summary>
+        /// Delete a movie item by id
+        /// </summary>
+        /// <param name="movieId"></param>
+        /// <returns></returns>
+        //DELETE: Movies/DeleteMovie/id
+        [HttpDelete("api/Movies/{movieId}")]
+        public ActionResult DeleteMovie(int movieId)
         {
-          return _context.Movies.Any(e => e.MovieId == id);
+            Movies movies = _unitOfWork.MovieRepository.GetByID(movieId);
+            if (movies == null)
+            {
+                return BadRequest("Could not find object");
+            }
+
+            _unitOfWork.MovieRepository.Delete(movies);
+            _unitOfWork.Save();
+          
+            return Accepted();
         }
+
     }
 }

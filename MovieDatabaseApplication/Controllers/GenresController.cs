@@ -37,41 +37,15 @@ namespace MovieDatabaseApplication.Controllers
           
         }
 
-        /// <summary>
-        /// Get a genre by id
-        /// </summary>
-        /// <param name="genreId"></param>
-        /// <returns></returns>
-        /// <response code="200">Returns the list of items</response>
-        //[HttpGet("{id}")]
-        //public ActionResult GetGenre(int genreId)
-        //{
-        //    Genres genre = _unitOfWork.GenreRepository.GetByID(genreId);
 
-        //    //var genre = _db.Genres
-        //    //    .Where(g => g.GenreId == genreId)
-        //    //    .FirstOrDefault();
-
-        //    if (genre == null)
-        //    {
-        //        return NotFound("That object is not found.");
-        //    }
-
-        //    return Accepted(genre);
-
-        //}
-
-       
-
-        // POST: Genres/PostGenres
         /// <summary>
         /// Create a new genre item
         /// </summary>
         /// <param name="postGenre"></param>
         /// <returns></returns>
+        // POST: Genres/PostGenres
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult PostGenres(GenreDto postGenre)
+        public ActionResult PostGenres([FromBody] GenreDto postGenre)
         {
             var tempGenre = new Genres()
             {
@@ -89,10 +63,8 @@ namespace MovieDatabaseApplication.Controllers
         /// </summary>
         /// <param name="genreId"></param>
         /// <returns></returns>
-        //GET: Genres/DeleteGenres/5
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+       
+        [HttpDelete("api/Genres/{genreId}")]
         public ActionResult DeleteGenres(int genreId)
         {
             Genres genres = _unitOfWork.GenreRepository.GetByID(genreId);
@@ -103,13 +75,13 @@ namespace MovieDatabaseApplication.Controllers
             if (movies.ToList().Count > 0)
             {
                 return Problem(statusCode: 400, detail: "Cannot delete genre; other table has dependency on it", title: "400 Error");
-                //return BadRequest("Cannot delete rating; other table has dependency on it");
+               
             }
 
             if (genres == null)
             {
                 return Problem(statusCode: 400, detail: "Could not find object", title: "400 Error");
-                //return BadRequest("Could not find object");
+                
             }
 
             _unitOfWork.GenreRepository.Delete(genreId);

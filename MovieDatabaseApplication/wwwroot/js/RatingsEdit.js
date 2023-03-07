@@ -15,7 +15,7 @@
         }
     });
 
-    console.log(id);
+   
     $(".spinner-border").show();
     $(".form-group").hide();
     $.ajax({
@@ -46,7 +46,7 @@
         if (isValid) {
             $.ajax({
                 type: "PUT",
-                url: "/Ratings/EditRatings/" + id,
+                url: "/api/ratings/" + id,
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(ratingObj),
                 dataType: "json",

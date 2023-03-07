@@ -53,7 +53,8 @@ $(document).ready(function () {
 
     function onDeleteGenre() {
         $.ajax({
-            type: "./Genres/DeleteGenres/" + tempGenreId,
+            type: 'DELETE',
+            url: 'api/Genres/' + tempGenreId,
             //dataType: "json",
             //crossDomain: "true",
             success: function () {

@@ -1,42 +1,78 @@
-﻿@model MovieDatabaseApplication.Models.Movies
-
-@{
-    ViewData["Title"] = "Create";
-}
+﻿<link rel="stylesheet" href="~/css/MoviesCreate.css">
 
 <h1>Create</h1>
 
 <h4>Movies</h4>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+<!--Modal-->
+<div class="modal fade" id="addMovieModal" tabindex="-1" aria-labelledby="addMovieModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modalContent">
+            <div class="modal-body">
+                <p>Your edit was successful.</p>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="onAddAgain()">Add Another</button>
+                <button type="button" class="btn btn-danger" onclick="onBack()">Back to Movies</button>
             </div>
-            <div class="form-group">
-                <label asp-for="RatingId" class="control-label"></label>
-                <select asp-for="RatingId" class ="form-control" asp-items="ViewBag.RatingId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+<!--End of Modal-->
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<form id="movieCreateForm">
+    <div class="form-group container-fluid">
+        <label for="Title" class="col-form-label"><b>Title:</b></label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" id="movieTitle" name="movieTitle" />
+        </div>
+    </div>
+    <div class="form-group container-fluid">
+        <label for="Description" class="col-form-label"><b>Description:</b></label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" id="movieDescription" name="movieDescription" />
+        </div>
+    </div>
+    <div class="form-group container-fluid">
+        <label for="Rating" class="col-form-label"><b>Rating:</b></label>
+        <select name="movieRating" id="movieRating" class="form-control minimal">
+            <option value="">Select Rating</option>
+        </select>
+    </div>
+    <div class="form-group container-fluid">
+        <div class="row">
+            <div class="col-md">
+                <label for="movieGenreSelected" class="col-form-label"><b>Genre:</b></label>
+                <div class="list-group" id="movieGenreSelected">
+                    @*list dynamically populated with js*@
+                </div>
+            </div>
+            <div class="col-md">
+                <a href="#" class="previous round" onclick="toGenreSelected()">&#8249;</a>
+                <a href="#" class="next round" onclick="toGenreList()">&#8250;</a>
+            </div>
 
+            <div class="col-md">
+                <label for="movieGenreList" class="col-form-label"><b>Genre List:</b></label>
+                <div class="list-group" id="movieGenreList">
+                    @*list dynamically populated with js*@
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group container">
+        <div>
+            <button type="button" class="btn btn-primary mt-3" onclick="onCreateMovie()">Save Movie</button>
+            <button type="button" class="btn btn-outline-primary mt-3" onclick="window.location.href='/Movies'">Back to Movies</button>
+        </div>
+
+    </div>
+</form>
+
+<script type="text/javascript" src="~/js/MoviesCreate.js" asp-append-version="true"></script>
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
+

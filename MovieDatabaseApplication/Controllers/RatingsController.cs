@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using MovieDatabaseApplication.DAL;
 using MovieDatabaseApplication.Models;
 
@@ -66,8 +60,7 @@ namespace MovieDatabaseApplication.Controllers
         /// <returns></returns>
         //POST: Ratings/PostRatings
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult PostRatings(RatingDto postRating)
+        public ActionResult PostRatings([FromBody] RatingDto postRating)
         {
             var tempRating = new Ratings()
             {
@@ -85,11 +78,9 @@ namespace MovieDatabaseApplication.Controllers
         /// <param name="ratingId"></param>
         /// <param name="rating"></param>
         /// <returns></returns>
-        //POST: Ratings/EditRatings
-        [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult EditRatings(int ratingId, RatingDto rating)
+        //PUT: Ratings/EditRatings
+        [HttpPut("api/ratings/{ratingId}")]
+        public ActionResult EditRatings(int ratingId,[FromBody] RatingDto rating)
         {
             Ratings ratings = _unitOfWork.RatingRepository.GetByID(ratingId);
             if (ratings == null)
@@ -111,44 +102,30 @@ namespace MovieDatabaseApplication.Controllers
         /// </summary>
         /// <param name="ratingId"></param>
         /// <returns></returns>
-        //GET: Ratings/
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        //DELETE: Ratings/DeleteRatings
+        [HttpDelete("api/ratings/{ratingId}")]
         public ActionResult DeleteRatings(int ratingId)
         {
-            //var ratings = _db.Ratings.Find(ratingId);
-            //Ratings ratings = ratingsRepository.GetRatingByID(ratingId);
-
             Ratings ratings = _unitOfWork.RatingRepository.GetByID(ratingId);
 
             var movie = _unitOfWork.MovieRepository.Get(m => m.RatingId == ratingId);
-            //var movie = _db.Movies.FirstOrDefault(x => x.RatingId == ratingId);
+           
             if (movie.ToList().Count > 0)
             {
                 return Problem(statusCode: 400, detail: "Cannot delete rating; other table has dependency on it", title: "400 Error");
-                //return BadRequest("Cannot delete rating; other table has dependency on it");
+               
             }
             if (ratings == null)
             {
                 return Problem(statusCode: 400, detail: "Could not find object", title: "400 Error");
-                //return BadRequest("Could not find object");
+                
             }
 
-            // _db.Ratings.Remove(ratings);
-            //_db.SaveChanges();
-            //ratingsRepository.DeleteRatings(ratingId);
-            //ratingsRepository.Save();
             _unitOfWork.RatingRepository.Delete(ratingId);
             _unitOfWork.Save();
             return Accepted();
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> Edit(int id)
-        //{
-        //    return View(id);
-        //}
 
         public IActionResult Edit(int id)
         {
