@@ -34,6 +34,7 @@
 
     function onOpenModal(movieId) {
         tempMovieId = movieId;
+        
         $("#deleteModal").modal("show");
     }
 
@@ -49,7 +50,6 @@
             url: "api/movies/" + tempMovieId,
             //dataType: "json",
             success: function () {
-                console.log(tempMovieId);
                 $("#deleteModal").modal('hide');
                 $("#movie-" + tempMovieId).remove();
             },

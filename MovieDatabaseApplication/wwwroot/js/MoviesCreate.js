@@ -34,8 +34,7 @@
         dataType: "json",
         crossDomain: "true",
         success: function (result) {
-            console.log("Received Genre Data");
-            genresData = result;
+            genresdata = result;
             populateGenresList(result);
         }
     });
@@ -46,15 +45,13 @@
         dataType: "json",
         crossDomain: "true",
         success: function (result) {
-            console.log("Received Ratings Data");
             populateRatingsSelect(result);
         }
     });
 
-    function populateGenresList(genresdata) {
-        genresdata.forEach(function (genre) {
-            $('#movieGenreList').append('<button type="button" class="list-group-item list-group-item-action">'
-                + genre.genre + '</button>');
+    function populateGenresList(genresResults) {
+        genresResults.forEach(function (genre) {
+            $('#movieGenreList').append(`<button type="button" id="${genre.genre}" class="list-group-item list-group-item-action">${genre.genre}</button>`);
         });
     }
 
@@ -86,7 +83,6 @@
     }
 
     window.toGenreList = function () {
-        console.log(selectedItem);
         selectedItem.remove();
         $("#movieGenreList").append(selectedItem);
 
@@ -119,7 +115,6 @@
             movieGenres: newGenre
         };
 
-        //function checkGenreSelected(selectedGenresList)
 
         const isValid = $("#movieCreateForm").valid();
 
@@ -143,6 +138,91 @@
 
     }
 
+   
+
+    $("#searchMovieButton").click(function searchMovie() {
+        var searchTitle = $("#movieSearchTitle").val();
+
+        $.ajax({
+            type: "GET",
+            url: "/api/search/" + searchTitle,
+            dataType: "json",
+            success: function (data) {
+                var searchObj = JSON.parse(data);
+
+                if (!searchObj.Search) {
+                    console.log("Error - Search Engine is down");
+                    return;
+                }
+
+                searchObj.Search.forEach(function (movie) {
+                    $('#movieSearchResults').append("<tr><td>"
+                        + movie.Title + "</td><td>"
+                        + movie.Year + "</td><td></td><td><button type='button' class='btn btn-outline-success' onclick='importMovie(\""
+                        + movie.imdbID + "\")'>Import</button></td></tr>"
+                    )
+                })
+               
+            }
+        })
+    })
+
+    $('#clearSearchResultsButton').click(function clearTable() {
+        $('#movieSearchResults').empty();
+    })
+  
+    window.importMovie = function(imdbID) {
+        searchId = imdbID;
+
+        $.ajax({
+            type: "GET",
+            url: "/api/import/" + searchId,
+            dataType: "json",
+            success: function (data) {
+                var importObj = JSON.parse(data);
+                $('#movieTitle').val(importObj.Title);
+                $('#movieDescription').val(importObj.Plot);
+                $(`#movieRating option:contains('${importObj.Rated}')`).each(function () {
+                    if ($(this).html() == `${importObj.Rated}`) {
+                        $(this).prop('selected', true);
+                    }
+                });
+                
+                var importedGenres = [];
+                var genreArray = importObj.Genre.split(', ');
+             
+                genreArray.forEach(genre => {
+                    var found = genresdata.find(g => g.genre === genre);
+                    
+                    if (found) {
+                        importedGenres.push(found)
+                    }
+                });
+
+                importedGenres.forEach(genre => {
+                    $('#movieGenreList button').remove(`#${genre.genre}`);
+                    $('#movieGenreSelected').append(`<button type="button" class="list-group-item list-group-item-action">${genre.genre}</button>`);
+                    selectedGenresList = importedGenres;
+                })
+
+            }
+        })
+    }
+
+    $('#clearMovieEntryButton').click(function clearEntry() {
+        $('#movieTitle').val("");
+        $('#movieDescription').val("");
+        $('#movieRating option:contains("Select Rating")').prop('selected', true);
+        $('#movieGenreSelected').empty();
+
+        selectedGenresList.forEach(genre => {
+            $('#movieGenreSelected button').remove(`#${genre.genre}`);
+            $('#movieGenreList button').remove();
+            populateGenresList(genresdata);
+        })
+        
+    });
+
     window.onAddAgain = function () {
         location.reload();
     }
@@ -152,5 +232,4 @@
 
         return false;
     }
-
 });    

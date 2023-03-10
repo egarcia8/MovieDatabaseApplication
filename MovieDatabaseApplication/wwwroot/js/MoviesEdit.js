@@ -34,7 +34,7 @@ $(document).ready(async function () {
         crossDomain: "true",
         success: function (result) {
             genresData = result;
-            populateGenresList(result);
+           
         }
     });
 

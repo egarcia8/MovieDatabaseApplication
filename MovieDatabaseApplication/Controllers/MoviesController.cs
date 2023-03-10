@@ -1,22 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using MovieDatabaseApplication.DAL;
 using MovieDatabaseApplication.Models;
+using Newtonsoft.Json;
 
 namespace MovieDatabaseApplication.Controllers
 {
     public class MoviesController : Controller
     {
         private UnitOfWork _unitOfWork;
+        private readonly IConfiguration _config;
+        private static readonly HttpClient _httpClient = new HttpClient();       
 
-        public MoviesController(UnitOfWork unitOfWork)
+        public MoviesController(
+            UnitOfWork unitOfWork,
+            IConfiguration config)
         {
             _unitOfWork = unitOfWork;
+            _config = config;            
         }
 
         public IActionResult Index()
@@ -56,6 +64,29 @@ namespace MovieDatabaseApplication.Controllers
         public IActionResult Create()
         {
             return View();
+        }
+
+
+        [HttpGet("api/search/{searchTitle}")]
+        public async Task<JsonResult> SearchMovie(string searchTitle)
+        {
+            var key = _config["omdb-key"];
+
+            var response = await _httpClient.GetAsync($"https://www.omdbapi.com?apikey={key}&page=1&s={searchTitle}");
+            var responseBody = await response.Content.ReadAsStringAsync();
+            
+            return Json( responseBody);
+        }
+
+        [HttpGet("api/import/{searchId}")]
+        public async Task<JsonResult> ImportMovie(string searchId)
+        {
+            var key = _config["omdb-key"];
+
+            var response = await _httpClient.GetAsync($"https://www.omdbapi.com?apikey={key}&i={searchId}");
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            return Json(responseBody);
         }
 
         /// <summary>
